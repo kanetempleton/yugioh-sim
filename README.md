@@ -50,7 +50,7 @@ To run the YugiohGo web application, you need to set up a MySQL database. Follow
     CREATE DATABASE yugiohgo;
     ```
 
-    You do not need to create any tables. The application uses XROM to manage this automatically.
+    You do not need to create any tables. The application uses XORM to manage this automatically.
 
 3. **Modify Connection Details**: If you changed any of the database creation values, swap them out in `main.go` and `user.go`
 
