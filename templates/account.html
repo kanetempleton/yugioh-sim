@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account</title>
+    <script>
+        // Function to get cookie value by name
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+
+        // Get the username from the cookie
+        var username = getCookie("session");
+
+        // Redirect to login page if no session cookie
+        if (!username) {
+            window.location.href = "/login";
+        }
+
+        // Populate the username in the template
+        window.onload = function() {
+            var welcomeDiv = document.getElementById("welcomeDiv");
+            welcomeDiv.textContent = "Welcome, " + username + "!";
+            var usernameSpan = document.getElementById("usernameSpan");
+            usernameSpan.textContent = username;
+        };
+    </script>
+</head>
+<body>
+    <div id="navbar"></div>
+    <script src="/static/navbar.js"></script>
+
+    <h1>Account</h1>
+    <div id="welcomeDiv"></div>
+    <div>
+        <button><a href="/view-deck">View Deck</a></button>
+        <button><a href="/add-card">Add Card</a></button>
+    </div>
+    <div>
+        <h3><span id="usernameSpan"></span>:</h3>
+        <a href="/account">Account</a>
+        <a href="/logout">Log Out</a>
+    </div>
+</body>
+</html>
