@@ -53,3 +53,36 @@ func GetUserByUsername(username string) (*User, error) {
     }
     return user, nil
 }
+
+// DeleteUser deletes a user from the database.
+func DeleteUser(username string) error {
+    _, err := Engine.Where("username = ?", username).Delete(&User{})
+    return err
+}
+
+func UpdateUser(user *User) error {
+    _, err := Engine.Where("username = ?", user.Username).Update(user)
+    return err
+}
+
+func GetAllUsers() ([]User, error) {
+    var users []User
+    err := Engine.Find(&users)
+    if err != nil {
+        return nil, err
+    }
+    return users, nil
+}
+
+func GetUserByEmail(email string) (*User, error) {
+    user := new(User)
+    has, err := Engine.Where("email = ?", email).Get(user)
+    if err != nil {
+        return nil, err
+    }
+    if !has {
+        return nil, nil
+    }
+    return user, nil
+}
+

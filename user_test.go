@@ -93,6 +93,282 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
+func TestDeleteUser(t *testing.T) {
+	fmt.Println("Testing DeleteUser")
+    // Initialize the database
+    err := Initialize("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
+    if err != nil {
+        t.Fatalf("Failed to initialize database: %v", err)
+    }
+    defer Engine.Close()
+
+    // Ensure the user 'testuser' is not in the database
+    existingUser, err := GetUserByUsername("testuser")
+    if err != nil {
+        t.Fatalf("Failed to query database: %v", err)
+    }
+    if existingUser != nil {
+        err := DeleteUser("testuser")
+        if err != nil {
+            t.Fatalf("Failed to delete user: %v", err)
+        }
+    }
+
+    // Create a new user
+    newUser := &User{
+        Username: "testuser",
+        Password: "testpassword",
+        Email:    "testuser@example.com",
+    }
+    err = CreateUser(newUser)
+    if err != nil {
+        t.Fatalf("Failed to create user: %v", err)
+    }
+
+    // Delete the user
+    err = DeleteUser("testuser")
+    if err != nil {
+        t.Fatalf("Failed to delete user: %v", err)
+    }
+
+    // Ensure the user is deleted from the database
+    deletedUser, err := GetUserByUsername("testuser")
+    if err != nil {
+        t.Fatalf("Failed to query database: %v", err)
+    }
+    if deletedUser != nil {
+        t.Fatalf("User was not deleted")
+    }
+}
+
+func TestUpdateUser(t *testing.T) {
+	fmt.Println("Testing UpdateUser")
+    // Initialize the database connection
+    err := Initialize("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
+    if err != nil {
+        t.Fatalf("Failed to initialize database: %v", err)
+    }
+    defer Engine.Close()
+
+    // Ensure the test users don't exist before the test
+    for _, username := range []string{"testuser1", "testuser2"} {
+        _, err := GetUserByUsername(username)
+        if err == nil {
+            err = DeleteUser(username)
+            if err != nil {
+                t.Fatalf("Failed to delete test user: %v", err)
+            }
+        }
+    }
+
+    // Create test users
+    testUsers := []*User{
+        {Username: "testuser1", Password: "testpassword1", Email: "testuser1@example.com"},
+        {Username: "testuser2", Password: "testpassword2", Email: "testuser2@example.com"},
+    }
+
+    for _, user := range testUsers {
+        err := CreateUser(user)
+        if err != nil {
+            t.Fatalf("Failed to create test user: %v", err)
+        }
+    }
+
+    // Update test users
+    for _, user := range testUsers {
+        user.Password = "newpassword"
+        user.Email = "newemail@example.com"
+        err := UpdateUser(user)
+        if err != nil {
+            t.Fatalf("Failed to update test user: %v", err)
+        }
+    }
+
+    // Delete the test users
+    for _, user := range testUsers {
+        err := DeleteUser(user.Username)
+        if err != nil {
+            t.Fatalf("Failed to delete test user: %v", err)
+        }
+    }
+}
+
+
+func TestGetAllUsers(t *testing.T) {
+	fmt.Println("Testing GetAllUsers")
+    // Initialize the database connection
+    err := Initialize("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
+    if err != nil {
+        t.Fatalf("Failed to initialize database: %v", err)
+    }
+    defer Engine.Close()
+
+    // Ensure the test users don't exist before the test
+    for _, username := range []string{"testuser1", "testuser2", "testuser3"} {
+        _, err := GetUserByUsername(username)
+        if err == nil {
+            err = DeleteUser(username)
+            if err != nil {
+                t.Fatalf("Failed to delete test user: %v", err)
+            }
+        }
+    }
+
+    // Create test users
+    testUsers := []*User{
+        {Username: "testuser1", Password: "testpassword1", Email: "testuser1@example.com"},
+        {Username: "testuser2", Password: "testpassword2", Email: "testuser2@example.com"},
+        {Username: "testuser3", Password: "testpassword3", Email: "testuser3@example.com"},
+    }
+
+    for _, user := range testUsers {
+        err := CreateUser(user)
+        if err != nil {
+            t.Fatalf("Failed to create test user: %v", err)
+        }
+    }
+
+    // Retrieve all users
+    users, err := GetAllUsers()
+    if err != nil {
+        t.Fatalf("Failed to retrieve all users: %v", err)
+    }
+
+    // Check if the number of retrieved users matches the number of test users
+    if len(users) != len(testUsers) {
+        t.Fatalf("Number of retrieved users does not match")
+    }
+
+    // Delete the test users
+    for _, user := range testUsers {
+        err := DeleteUser(user.Username)
+        if err != nil {
+            t.Fatalf("Failed to delete test user: %v", err)
+        }
+    }
+}
+
+
+
+
+func TestReadUserByEmail(t *testing.T) {
+	fmt.Println("Testing ReadUserByEmail")
+    // Initialize the database connection
+    err := Initialize("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
+    if err != nil {
+        t.Fatalf("Failed to initialize database: %v", err)
+    }
+    defer Engine.Close()
+
+    // Ensure the test user doesn't exist before the test
+    _, err = GetUserByEmail("testuser@example.com")
+    if err == nil {
+        err = DeleteUser("testuser")
+        if err != nil {
+            t.Fatalf("Failed to delete test user: %v", err)
+        }
+    }
+
+    // Create a test user
+    testUser := &User{
+        Username: "testuser",
+        Password: "testpassword",
+        Email:    "testuser@example.com",
+    }
+
+    err = CreateUser(testUser)
+    if err != nil {
+        t.Fatalf("Failed to create test user: %v", err)
+    }
+
+    // Retrieve the user by email
+    retrievedUser, err := GetUserByEmail("testuser@example.com")
+    if err != nil {
+        t.Fatalf("Failed to retrieve user by email: %v", err)
+    }
+
+    // Check if the retrieved user matches the test user
+    if retrievedUser.Username != testUser.Username ||
+        retrievedUser.Password != testUser.Password ||
+        retrievedUser.Email != testUser.Email ||
+        retrievedUser.Privileges != testUser.Privileges {
+        t.Fatalf("Retrieved user does not match test user")
+    }
+
+    // Delete the test user
+    err = DeleteUser("testuser")
+    if err != nil {
+        t.Fatalf("Failed to delete test user: %v", err)
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 func TestMain(m *testing.M) {
 	// Perform any setup or teardown tasks before/after all tests
 
@@ -121,4 +397,5 @@ func TestMain(m *testing.M) {
 
 	os.Exit(exitCode)
 }
+
 
