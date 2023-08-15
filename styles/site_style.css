@@ -1,0 +1,52 @@
+
+/* Body and background */
+body {
+    background-color: #5d2d03; /* Dark brown background */
+    color: #ffffff; /* White text */
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Header */
+h1 {
+    color: #ffa54f; /* Orange header text */
+    margin-bottom: 20px;
+}
+
+/* Navigation bar */
+#navbar {
+    background-color: #5d2d03; /* Dark brown navbar background */
+}
+
+.nav-link {
+    color: #ffa54f; /* Orange navbar links */
+    text-decoration: none;
+    padding: 10px;
+}
+
+/* Buttons */
+button {
+    background-color: #941c04; /* Orange buttons */
+    border: none;
+    color: #ffffff; /* White button text */
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+/* Default link color and underlining */
+a {
+    color: yellow;
+    text-decoration: underline;
+}
+
+/* Link color on hover */
+a:hover {
+    color: orange;
+}
+
+/* Link color when visited */
+a:visited {
+    color: orange;
+}

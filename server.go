@@ -87,7 +87,17 @@ func startServer() {
 
 	staticDir := "/static/"
     fs := http.FileServer(http.Dir("static"))
-    r.PathPrefix(staticDir).Handler(http.StripPrefix(staticDir, setContentTypeMiddleware("application/javascript", fs)))
+    r.PathPrefix(staticDir).Handler(http.StripPrefix(staticDir, fs))
+
+	r.HandleFunc("/static/site_style.css", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Setting content type to text/css")
+		w.Header().Set("Content-Type", "text/css")
+		http.ServeFile(w, r, "static/site_style.css")
+	})
+
+	stylesfs := http.FileServer(http.Dir("styles"))
+    //http.Handle("/card-images/", http.StripPrefix("/card-images/", cardImagesFS))
+	r.PathPrefix("/styles/").Handler(http.StripPrefix("/styles/", setContentTypeMiddleware("text/css", stylesfs)))
 
 
 	// Set up file server for card images
