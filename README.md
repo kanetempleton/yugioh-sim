@@ -16,9 +16,9 @@ Stack: Go + MySQL + JS
 2. Set up MySQL: See the steps below to make sure your MySQL environment is set up properly.
 3. Clone the repository: `git clone https://github.com/kanetempleton/yugioh-sim.git`
 4. Navigate to the project directory: `cd yugioh-sim`
-5. Get dependencies: `go get` or `go mod tidy`
+5. Get dependencies: `go mod tidy` or `go get`
 6. Compile the Go application: `go build`
-7. Run tests (Skip for now because I don't have tests yet): `go test`
+7. Run tests: `go test`
 8. Run the server: `./yugiohgo`
 9. Access the app: Open your web browser and visit `http://localhost:8080` to interact with the app.
 

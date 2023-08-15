@@ -90,6 +90,14 @@ func startServer() {
     r.PathPrefix(staticDir).Handler(http.StripPrefix(staticDir, setContentTypeMiddleware("application/javascript", fs)))
 
 
+	// Set up file server for card images
+    cardImagesFS := http.FileServer(http.Dir("card-images"))
+    //http.Handle("/card-images/", http.StripPrefix("/card-images/", cardImagesFS))
+	r.PathPrefix("/card-images/").Handler(http.StripPrefix("/card-images/", setContentTypeMiddleware("image/jpeg", cardImagesFS)))
+
+	//http.Handle("/card-images/", http.StripPrefix("/card-images/", http.FileServer(http.Dir("card-images"))))
+
+
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         http.ServeFile(w, r, "templates/index.html")
     })
@@ -223,34 +231,6 @@ func startServer() {
 		w.Write(jsonResponse)
 	})
 	
-
-	r.HandleFunc("/get-user-cards", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("GET /get-user-cards")
-		sessionCookie, err := r.Cookie("session")
-		if err != nil || sessionCookie.Value == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther) // Redirect to login page if not authenticated
-			return
-		}
-	
-		userID := sessionCookie.Value
-	
-		//session := Engine.NewSession()
-	
-		cards, err := GetCardsByUserID(userID)
-		if err != nil {
-			http.Error(w, "Error fetching user's cards", http.StatusInternalServerError)
-			return
-		}
-	
-		jsonResponse, err := json.Marshal(cards)
-		if err != nil {
-			http.Error(w, "Error converting to JSON", http.StatusInternalServerError)
-			return
-		}
-	
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(jsonResponse)
-	})
 	
 	
 
@@ -269,6 +249,7 @@ func startServer() {
 			}
 	
 			userID := sessionCookie.Value
+			userID = strings.ToLower(userID)
 			name := r.FormValue("name")
 			file, fileHeader, err := r.FormFile("image")
 			if err != nil {
@@ -277,11 +258,10 @@ func startServer() {
 			}
 			defer file.Close()
 	
-			// Generate a unique filename for the uploaded image
-		//	fileName := fmt.Sprintf("%s_%s", userID, fileHeader.Filename)
-			// Generate a unique filename for the uploaded image
-			baseFilename := fmt.Sprintf("%s_%s", userID, fileHeader.Filename)
-			fileName := baseFilename
+			
+			baseFilename := fmt.Sprintf("%s_%s", userID, strings.ReplaceAll(fileHeader.Filename, " ", "_"))
+        	fileName := baseFilename
+			//fileName = generateRandomString(10)
 
 			// Check if the filename already exists
 			i := 1

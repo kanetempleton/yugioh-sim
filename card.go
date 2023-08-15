@@ -5,6 +5,7 @@ import (
 	"github.com/go-xorm/xorm"
     _ "github.com/go-sql-driver/mysql"
 	"fmt"
+	"net/url"
 )
 
 // Card represents a user's uploaded card.
@@ -64,12 +65,25 @@ func GetCardsByUserID(userID string) ([]string, error) {
 	var cardIdentifiers []string
 	err := CardEngine.Table("cards").Cols("file_name").Where("user_i_d = ?", userID).Find(&cardIdentifiers)
 	if err != nil {
-		fmt.Println("Failed to retrieve card identifiers ",err)
+		fmt.Println("Failed to retrieve card identifiers ", err)
 		return nil, err
 	}
-	fmt.Println("Retrieved card identifiers for user " + userID, cardIdentifiers)
-	return cardIdentifiers, nil
+
+	// Decode the card identifiers
+	decodedCardIdentifiers := make([]string, len(cardIdentifiers))
+	for i, identifier := range cardIdentifiers {
+		decodedIdentifier, err := url.QueryUnescape(identifier)
+		if err != nil {
+			fmt.Println("Error decoding identifier:", err)
+			return nil, err
+		}
+		decodedCardIdentifiers[i] = decodedIdentifier
+	}
+
+	fmt.Println("Retrieved card identifiers for user " + userID, decodedCardIdentifiers)
+	return decodedCardIdentifiers, nil
 }
+
 
 
 // Add more functions for managing cards, like deleting, updating, etc.
