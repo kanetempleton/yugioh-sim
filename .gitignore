@@ -1,4 +1,6 @@
 test-cards/*.jpeg
 test-cards/*.jpg
 test-cards/*.png
-
+*/test-cards/*
+/test-cards/*
+test-cards/*
