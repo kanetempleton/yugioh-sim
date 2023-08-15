@@ -4,4 +4,11 @@ test-cards/*.png
 */test-cards/*
 /test-cards/*
 test-cards/*
-card-images/*
+card-images/*.jpeg
+card-images/*.jpg
+card-images/*.png
+*/*.DS_Store
+*/.DS_Store
+*.DS_Store
+.DS_Store
+
