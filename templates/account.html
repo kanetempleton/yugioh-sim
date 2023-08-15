@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Account</title>
+    
     <script>
         // Function to get cookie value by name
         function getCookie(name) {
@@ -42,5 +43,31 @@
         <a href="/account">Account</a>
         <a href="/logout">Log Out</a>
     </div>
+    <div id="messageDiv2"></div>
+    <div id="messageDiv"></div>
+    <script>
+        // Parse URL parameters to get the message
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+
+        // Display the message if it exists
+        if (message) {
+            const messageDiv = document.getElementById('messageDiv');
+            const messageElement = document.createElement('p');
+            messageElement.style.color = 'green';
+            messageElement.textContent = message;
+            messageDiv.appendChild(messageElement);
+        }
+        const message2 = urlParams.get('message2');
+
+        // Display the message if it exists
+        if (message2) {
+            const message2Div = document.getElementById('message2Div');
+            const message2Element = document.createElement('p');
+            message2Element.style.color = 'red';
+            message2Element.textContent = message2;
+            message2Div.appendChild(message2Element);
+        }
+    </script>
 </body>
 </html>

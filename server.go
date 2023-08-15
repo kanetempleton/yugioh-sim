@@ -9,9 +9,32 @@ import (
 	"strings"
     "github.com/gorilla/mux"
     _ "github.com/go-sql-driver/mysql"
+	"mime/multipart"
+	"os"
+	"github.com/go-xorm/xorm"
+	"io"
+	"math/rand"
+    "time"
+	"encoding/json"
+	"path/filepath"
 )
 
 var db *sql.DB
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func generateRandomString(length int) string {
+    rand.Seed(time.Now().UnixNano())
+    result := make([]byte, length)
+    for i := range result {
+        result[i] = charset[rand.Intn(len(charset))]
+    }
+    return string(result)
+}
+
+func fileExists(filename string) bool {
+    _, err := os.Stat(filename)
+    return err == nil
+}
 
 func isDuplicateKeyError(err error) bool {
     if err != nil {
@@ -29,9 +52,32 @@ func setContentTypeMiddleware(contentType string, h http.Handler) http.HandlerFu
     }
 }
 
+func saveImageToFile(file multipart.File, path string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
 func startServer() {
 
 	err := Initialize("admin:obviouspassword@tcp(localhost:3306)/yugiohgo")
+    if err != nil {
+        log.Fatal("Error initializing database:", err)
+    } else {
+		fmt.Println("Database initialized successfully!");
+	}
+
+	err = InitializeCardEngine("admin:obviouspassword@tcp(localhost:3306)/yugiohgo")
     if err != nil {
         log.Fatal("Error initializing database:", err)
     } else {
@@ -141,6 +187,141 @@ func startServer() {
 		// Expire the session cookie by setting MaxAge to a negative value
 		handleLogout(w,r)
 	})
+
+	r.HandleFunc("/view-deck", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			// Render the "view-deck.html" template
+			http.ServeFile(w, r, "templates/view-deck.html")
+		}
+	})
+
+	r.HandleFunc("/get-user-cards", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("GET /get-user-cards")
+		sessionCookie, err := r.Cookie("session")
+		if err != nil || sessionCookie.Value == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther) // Redirect to login page if not authenticated
+			return
+		}
+	
+		userID := sessionCookie.Value
+	
+		//session := CardEngine.NewSession()
+	
+		cardIdentifiers, err := GetCardsByUserID(userID)
+		if err != nil {
+			http.Error(w, "Error fetching user's cards", http.StatusInternalServerError)
+			return
+		}
+	
+		jsonResponse, err := json.Marshal(cardIdentifiers)
+		if err != nil {
+			http.Error(w, "Error converting to JSON", http.StatusInternalServerError)
+			return
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResponse)
+	})
+	
+
+	r.HandleFunc("/get-user-cards", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("GET /get-user-cards")
+		sessionCookie, err := r.Cookie("session")
+		if err != nil || sessionCookie.Value == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther) // Redirect to login page if not authenticated
+			return
+		}
+	
+		userID := sessionCookie.Value
+	
+		//session := Engine.NewSession()
+	
+		cards, err := GetCardsByUserID(userID)
+		if err != nil {
+			http.Error(w, "Error fetching user's cards", http.StatusInternalServerError)
+			return
+		}
+	
+		jsonResponse, err := json.Marshal(cards)
+		if err != nil {
+			http.Error(w, "Error converting to JSON", http.StatusInternalServerError)
+			return
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResponse)
+	})
+	
+	
+
+	r.HandleFunc("/add-card", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			err := r.ParseMultipartForm(10 << 20) // Limit file size to 10MB
+			if err != nil {
+				http.Error(w, "Error parsing form", http.StatusInternalServerError)
+				return
+			}
+	
+			sessionCookie, err := r.Cookie("session")
+			if err != nil || sessionCookie.Value == "" {
+				http.Redirect(w, r, "/login", http.StatusSeeOther) // Redirect to login page if not authenticated
+				return
+			}
+	
+			userID := sessionCookie.Value
+			name := r.FormValue("name")
+			file, fileHeader, err := r.FormFile("image")
+			if err != nil {
+				http.Error(w, "Error retrieving image file", http.StatusInternalServerError)
+				return
+			}
+			defer file.Close()
+	
+			// Generate a unique filename for the uploaded image
+		//	fileName := fmt.Sprintf("%s_%s", userID, fileHeader.Filename)
+			// Generate a unique filename for the uploaded image
+			baseFilename := fmt.Sprintf("%s_%s", userID, fileHeader.Filename)
+			fileName := baseFilename
+
+			// Check if the filename already exists
+			i := 1
+			for fileExists(fileName) {
+				fileName = fmt.Sprintf("%s-%d%s", baseFilename, i, filepath.Ext(fileHeader.Filename))
+				i++
+			}
+
+	
+			// Save the uploaded image to a directory (e.g., "card-images")
+			imagePath := "card-images/" + fileName
+			err = saveImageToFile(file, imagePath)
+			if err != nil {
+				http.Error(w, "Error saving image", http.StatusInternalServerError)
+				return
+			}
+	
+			// Get or create a database session using XORM
+			session, err := xorm.NewEngine("mysql", "admin:obviouspassword@tcp(localhost:3306)/yugiohgo")
+			if err != nil {
+				http.Error(w, "Error creating database session", http.StatusInternalServerError)
+				return
+			}
+			defer session.Close()
+	
+			// Create a new Card entry in the database
+			NewCard(userID, fileName, name)
+			if err != nil {
+				http.Error(w, "Error creating card entry", http.StatusInternalServerError)
+				return
+			}
+	
+			// Redirect to a success page or user account page
+			http.Redirect(w, r, "/account?message=Card+added+successfully%21", http.StatusSeeOther)
+		} else {
+			// Render the "add-card.html" template
+			http.ServeFile(w, r, "templates/add-card.html")
+		}
+	})
+	
 
     http.Handle("/", r)
 

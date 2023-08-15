@@ -379,12 +379,27 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	err = setupTestCardDatabase()
+	if err != nil {
+		fmt.Printf("Failed to set up test database: %v", err)
+		os.Exit(1)
+	}
+
 	// Initialize the Engine for test purposes
 	err = Initialize("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
 	if err != nil {
 		fmt.Printf("Failed to initialize test Engine: %v", err)
 		os.Exit(1)
 	}
+
+	// Initialize the CardEngine for test purposes
+	err = InitializeCardEngine("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
+	if err != nil {
+		fmt.Printf("Failed to initialize test CardEngine: %v", err)
+		os.Exit(1)
+	}
+
+
 
 	// Run the tests
 	exitCode := m.Run()
