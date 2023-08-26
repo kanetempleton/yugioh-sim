@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Duel (Solo)</title>
+    <link rel="stylesheet" type="text/css" href="/styles/site_style.css">
+    <link rel="stylesheet" type="text/css" href="/styles/duel_style.css">
+</head>
+<body>
+    <div id="navbar"></div>
+    <script src="/static/navbar.js"></script>
+
+    <h1>Duel (Solo)</h1>
+    
+    <div class="duel-header">
+        <div class="deck-selection">
+            <label for="selectDeck">Select Deck: </label>
+            <select id="selectDeck">
+                <!-- Populate the dropdown options with user's decks -->
+                <!-- You will populate this dropdown using JavaScript later -->
+            </select>
+            <button id="startButton">Start!</button>
+        </div>
+    </div>
+    <div id="hand-deck-section">
+    <div class="duel-grid">
+        <div class="grid-row">
+            <div class="grid-slot" id="field-slot"><p class="slot-text">Field Card</p></div>
+            <div class="grid-slot" id="slot-5"><p class="slot-text">Monster</p></div>
+            <div class="grid-slot" id="slot-4"><p class="slot-text">Monster</p></div>
+            <div class="grid-slot" id="slot-3"><p class="slot-text">Monster</p></div>
+            <div class="grid-slot" id="slot-2"><p class="slot-text">Monster</p></div>
+            <div class="grid-slot" id="slot-1"><p class="slot-text">Monster</p></div>
+            <div class="grid-slot" id="graveyard-slot"><p class="slot-text">Graveyard</p></div>
+        </div>
+        <div class="grid-row">
+            <div class="grid-slot" id="extra-deck-slot"><p class="slot-text">Extra Deck</p></div>
+            <div class="grid-slot" id="slot-10"><p class="slot-text">Spell/Trap</p></div>
+            <div class="grid-slot" id="slot-9"><p class="slot-text">Spell/Trap</p></div>
+            <div class="grid-slot" id="slot-8"><p class="slot-text">Spell/Trap</p></div>
+            <div class="grid-slot" id="slot-7"><p class="slot-text">Spell/Trap</p></div>
+            <div class="grid-slot" id="slot-6"><p class="slot-text">Spell/Trap</p></div>
+            <div class="grid-slot" id="deck-slot"><p class="slot-text">Deck</p></div>
+        </div>
+        <div class="divider"></div>
+        <div class="grid-row">
+            <div class="hand-slot" id="hand-slot-1">
+                <p class="slot-text">Hand</p>
+            </div>
+            <div class="hand-slot" id="hand-slot-2">
+                <p class="slot-text">Hand</p>
+            </div>
+            <div class="hand-slot" id="hand-slot-3">
+                <p class="slot-text">Hand</p>
+            </div>
+            <div class="hand-slot" id="hand-slot-4">
+                <p class="slot-text">Hand</p>
+            </div>
+            <div class="hand-slot" id="hand-slot-5">
+                <p class="slot-text">Hand</p>
+            </div>
+            <div class="hand-slot" id="hand-slot-6">
+                <p class="slot-text">Hand</p>
+            </div>
+            <div class="hand-slot" id="hand-slot-7">
+                <p class="slot-text">...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="/static/duel.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+/* Set the dimensions for grid slots and card images */
+.grid-slot,
+.hand-slot {
+    width: 150px; /* Set the desired width */
+    height: 210px; /* Set the desired height */
+    border: 1px solid black; /* Add border to grid slots */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    position: relative; /* Add position property */
+}
+
+/* Scale the card images to fit the grid slots */
+.card-image {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+/* Add spacing between the 2x7 grid and the 1x7 grid */
+#hand-deck-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Grid styling */
+.duel-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.grid-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    border-top: 1px solid black; /* Add a top border for each row */
+}
+
+/* Hand and deck section styling */
+.hand-deck-section {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid black; /* Add a top border to separate from grid */
+}
+
+.hand-deck-slot {
+    width: calc(14.28% - 2px); /* Adjust the width as needed */
+    height: 100px; /* Set the height of the hand and deck slots */
+    border-right: 1px solid black; /* Add a right border for each slot */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    position: relative; /* Add position property */
+}
+
+/* Duel controls */
+.duel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.select-deck {
+    margin-right: 10px;
+}
+
+/* Start button styling */
+#startButton {
+    background-color: #941c04; /* Orange button color */
+    border: none;
+    color: #ffffff; /* White button text */
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Slot text styling */
+.slot-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #d2b48c; /* Light brown text color */
+    font-size: 12px; /* Adjust font size as needed */
+    text-align: center;
+}
+
+
+/* Apply a golden glow to specific slots on hover */
+.hand-deck-slot:hover {
+    box-shadow: 0 0 10px gold;
+}
+
+/* Apply a teal glow to specific slots on hover */
+#extra-deck-slot:hover,
+#slot-10:hover,
+#slot-9:hover,
+#slot-8:hover,
+#slot-7:hover,
+#slot-6:hover {
+    box-shadow: 0 0 10px teal;
+}
+
+/* Add styles for the life points display container */
+.life-points {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Style for the life points display text */
+#lifePointsDisplay {
+    font-size: 24px;
+    color: #FFD700;
+    margin-right: 10px; /* Add some space between the text and input */
+}
+
+
+
+#deck-slot:hover,
+#hand-slot-1:hover,
+#hand-slot-2:hover,
+#hand-slot-3:hover,
+#hand-slot-4:hover,
+#hand-slot-6:hover,
+#hand-slot-5:hover {
+    box-shadow: 0 0 10px gold;
+}
+
+/* Apply a red glow to specific slots on hover */
+#slot-1:hover,
+#slot-2:hover,
+#slot-3:hover,
+#slot-4:hover,
+#slot-5:hover {
+    box-shadow: 0 0 10px red;
+}
+
+/* Apply a gray glow to the graveyard slot on hover */
+#graveyard-slot:hover {
+    box-shadow: 0 0 10px gray;
+}
+
+/* Apply a green glow to the field slot on hover */
+#field-slot:hover {
+    box-shadow: 0 0 10px green;
+}

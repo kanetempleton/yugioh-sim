@@ -213,6 +213,13 @@ func startServer() {
 		}
 	})
 
+	r.HandleFunc("/duel/solo", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			// Render the "view-deck.html" template
+			http.ServeFile(w, r, "templates/duel_solo.html")
+		}
+	})
+
 	r.HandleFunc("/get-user-cards", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("GET /get-user-cards")
 		sessionCookie, err := r.Cookie("session")
