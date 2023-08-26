@@ -222,10 +222,11 @@ func startServer() {
 		}
 	
 		userID := sessionCookie.Value
+		deck := r.URL.Query().Get("deck")
 	
 		//session := CardEngine.NewSession()
 	
-		cardIdentifiers, err := GetCardsByUserID(userID)
+		cardIdentifiers, err := GetCardsByUserID(userID,deck)
 		if err != nil {
 			http.Error(w, "Error fetching user's cards", http.StatusInternalServerError)
 			return
@@ -240,6 +241,88 @@ func startServer() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(jsonResponse)
 	})
+
+
+	r.HandleFunc("/get-user-decks", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("GET /get-user-decks")
+		
+		sessionCookie, err := r.Cookie("session")
+		if err != nil || sessionCookie.Value == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther) // Redirect to login page if not authenticated
+			return
+		}
+		
+		userID := sessionCookie.Value
+		
+		userDecks, err := GetDecksByUserID(userID)
+		if err != nil {
+			http.Error(w, "Error fetching user's decks", http.StatusInternalServerError)
+			return
+		}
+		
+		jsonResponse, err := json.Marshal(userDecks)
+		if err != nil {
+			http.Error(w, "Error converting to JSON", http.StatusInternalServerError)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResponse)
+	})
+
+	r.HandleFunc("/cards/set-deck", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Testing set-deck")
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+	
+		// Parse the request body
+		var requestData struct {
+			FileName  string `json:"file_name"`
+			DeckName  string `json:"deck"`
+		}
+		
+		if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+			http.Error(w, "Invalid request data", http.StatusBadRequest)
+			return
+		}
+	
+		// Update the card's deck name in the database
+		fmt.Println("FileName="+requestData.FileName+" DeckName="+requestData.DeckName+"")
+		card := new(Card)
+		has, err := CardEngine.Where("file_name = ?", requestData.FileName).Get(card)
+		if err != nil || !has {
+			fmt.Println("Card not found",err)
+			http.Error(w, "Card not found", http.StatusBadRequest)
+			return
+		}
+	
+		if err := card.SetDeck(requestData.DeckName); err != nil {
+			fmt.Println("Error setting deck",err)
+			http.Error(w, "Error setting card deck", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Println("Responding with success")
+	
+		// Respond with success
+		response := struct {
+			Success bool `json:"success"`
+		}{
+			Success: true,
+		}
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			fmt.Println("Error: ", err)
+			http.Error(w, "Error encoding response", http.StatusInternalServerError)
+			return
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResponse)
+	})
+	
 	
 	
 	
@@ -298,7 +381,7 @@ func startServer() {
 			defer session.Close()
 	
 			// Create a new Card entry in the database
-			NewCard(userID, fileName, name)
+			NewCard(userID, fileName, name, "None")
 			if err != nil {
 				http.Error(w, "Error creating card entry", http.StatusInternalServerError)
 				return
@@ -311,6 +394,40 @@ func startServer() {
 			http.ServeFile(w, r, "templates/add-card.html")
 		}
 	})
+
+	r.HandleFunc("/cards/delete", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+	
+		var requestData struct {
+			FileName string `json:"file_name"`
+		}
+	
+		err := json.NewDecoder(r.Body).Decode(&requestData)
+		if err != nil {
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+	
+		err = DeleteCardByFileName(requestData.FileName)
+		if err != nil {
+			http.Error(w, "Error deleting card", http.StatusInternalServerError)
+			return
+		}
+	
+		// Return a JSON response indicating success
+		response := struct {
+			Success bool `json:"success"`
+		}{
+			Success: true,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	})
+	
+	
 	
 
     http.Handle("/", r)
