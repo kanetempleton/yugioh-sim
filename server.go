@@ -344,6 +344,10 @@ func startServer() {
 			userID := sessionCookie.Value
 			userID = strings.ToLower(userID)
 			name := r.FormValue("name")
+			deck := r.FormValue("deck") 
+			if deck == "" {
+				deck = "None"
+			}
 			file, fileHeader, err := r.FormFile("image")
 			if err != nil {
 				http.Error(w, "Error retrieving image file", http.StatusInternalServerError)
@@ -381,7 +385,7 @@ func startServer() {
 			defer session.Close()
 	
 			// Create a new Card entry in the database
-			NewCard(userID, fileName, name, "None")
+			NewCard(userID, fileName, name, deck)
 			if err != nil {
 				http.Error(w, "Error creating card entry", http.StatusInternalServerError)
 				return

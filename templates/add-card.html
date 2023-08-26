@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,6 +9,8 @@
     <form action="/add-card" method="post" enctype="multipart/form-data">
         <label for="name">Card Name:</label>
         <input type="text" name="name" required><br>
+        <label for="deck">Deck Name (optional):</label>
+        <input type="text" name="deck"><br>
         <input type="file" name="image" accept="image/*" required><br>
         <input type="submit" value="Add Card">
     </form>
