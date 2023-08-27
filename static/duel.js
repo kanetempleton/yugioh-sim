@@ -38,9 +38,49 @@ window.onload = function() {
     populateDeckDropdown();
 };
 
-// Function to start the duel
-function startDuel() {
-    // Replace the dropdown with the life points display and controls
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function clearDeckSlot() {
+    deckSlot.innerHTML = '<p class="slot-text">Deck</p>';
+}
+
+function resetDeckSlot() {
+    // Reset deck slot
+    deckSlot.innerHTML = `<img class="card-image" src="/card-images/card-back.jpg">`;
+}
+
+function resetHandSlot(i) {
+    const handSlot = document.querySelector(`.hand-slot:nth-child(${i})`);
+    handSlot.innerHTML = `<p class="slot-text">Hand</p>`;
+}
+
+function resetHandSlots() {
+// Reset hand slots
+    for (let i = 1; i <= 6; i++) {
+        resetHandSlot(i);
+    }
+}
+
+
+function resetSlots() {
+    // Reset life points display and input
+    const lifePointsDisplay = document.getElementById('lifePointsDisplay');
+    lifePointsDisplay.textContent = `Life Points: 8000`;
+    const lifePointsInput = document.getElementById('lifePointsInput');
+    lifePointsInput.value = '';
+
+    resetHandSlots();
+    resetDeckSlot();
+}
+
+
+
+function initLifePoints(deckFileNames) {
     const dropdownContainer = document.getElementById('selectDeck').parentNode;
     dropdownContainer.innerHTML = `
     <div class="life-points">
@@ -48,6 +88,7 @@ function startDuel() {
         <input type="number" id="lifePointsInput" value="" min="0">
         <button id="increaseLifePoints">+</button>
         <button id="decreaseLifePoints">-</button>
+        <button id="resetDuel">Reset</button>
     </div>
     `;
 
@@ -56,6 +97,7 @@ function startDuel() {
     const lifePointsInput = document.getElementById('lifePointsInput');
     const increaseLifePointsButton = document.getElementById('increaseLifePoints');
     const decreaseLifePointsButton = document.getElementById('decreaseLifePoints');
+    const resetDuelButton = document.getElementById('resetDuel'); // New button reference
 
     // Initialize the life points variable
     let lifePoints = 8000;
@@ -81,13 +123,82 @@ function startDuel() {
         lifePointsDisplay.textContent = `Life Points: ${lifePoints}`;
         lifePointsInput.value = '';
     });
+
+    // Event listener for the "Reset" button
+    resetDuelButton.addEventListener('click', () => {
+        resetDuel(deckFileNames)
+    });
 }
 
+function resetDuel(deckFileNames) {
+    const confirmReset = confirm("Are you sure you want to reset the duel and shuffle your cards?");
+        if (confirmReset) {
+            // Reset all slots and shuffle the deck
+            resetSlots();
+            shuffleArray(deckFileNames); // Make sure to provide the deckFileNames array
+            currentIndex = 0;
+            deckIsEmpty = false;
+        }
+}
+
+var currentIndex = 0;
+let deckIsEmpty = false; // Track whether the deck is empty
+function isHandFull() {
+    return currentIndex >= 6; // 6 cards in hand
+}
+
+function clickDeck(deckFileNames) {
+    if (!deckIsEmpty && !isHandFull()) {
+        if (currentIndex < deckFileNames.length) {
+            // Load the next card image into the hand slot
+            const cardFileName = deckFileNames[currentIndex];
+            const handSlot = document.querySelector(`.hand-slot:nth-child(${currentIndex + 1})`);
+            handSlot.innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
+            currentIndex++;
+        }
+
+        if (currentIndex >= deckFileNames.length) {
+            // Deck is empty, reset the deck slot and prevent further actions
+            clearDeckSlot()
+            deckIsEmpty = true;
+        }
+    } else if (deckIsEmpty) {
+        // Deck is empty, prevent further actions
+        alert('Deck is empty');
+    } else {
+        // Hand is full, display a popup
+        alert('Hand is full');
+    }
+}
+
+// Function to start the duel
+function startDuel(deckFileNames) {
+    // Replace the dropdown with the life points display and controls
+    shuffleArray(deckFileNames);
+    initLifePoints(deckFileNames);
+
+    currentIndex = 0;
+
+
+    // Event listener for clicking the deck
+    deckSlot.addEventListener('click', () => {
+        clickDeck(deckFileNames);
+    });
+}
 
 // Event listener for the "Start!" button
 startButton.addEventListener('click', () => {
-    // Display the card-back image in the hand slot 7
-    deckSlot.innerHTML = `<img class="card-image" src="/card-images/card-back.jpg">`;
-    // You can add more functionality here to start the duel
-    startDuel();
+    // Fetch the selected deck's card file names using the /cards-in-deck route
+    const selectedDeck = selectDeckDropdown.value;
+    fetch(`/cards-in-deck?user_id=${sessionCookie}&deck=${selectedDeck}`)
+        .then(response => response.json())
+        .then(deckFileNames => {
+            // Display the card-back image in the hand slot 7
+            deckSlot.innerHTML = `<img class="card-image" src="/card-images/card-back.jpg">`;
+            // Start the duel simulation
+            startDuel(deckFileNames);
+        })
+        .catch(error => {
+            console.error('Error fetching card file names:', error);
+        });
 });

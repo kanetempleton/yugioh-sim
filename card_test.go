@@ -384,6 +384,68 @@ func TestGetCardsByDeck(t *testing.T) {
     }
 }
 
+func TestGetFileNamesForDeck(t *testing.T) {
+    fmt.Println("Testing GetFileNamesForDeck")
+
+    // Initialize the database connection
+    err := InitializeCardEngine("admin:obviouspassword@tcp(localhost:3306)/yugiohgo_test")
+    if err != nil {
+        t.Fatalf("Failed to initialize database: %v", err)
+    }
+    defer CardEngine.Close()
+
+    // Delete the test cards if they exist in the database
+    _, err = CardEngine.Exec("DELETE FROM cards WHERE file_name LIKE ?", "testcard%.jpg")
+    if err != nil {
+        t.Fatalf("Failed to delete existing test cards: %v", err)
+    }
+
+    // Create test cards for TestUser1 and TestUser2 in different decks
+    testCards := []struct {
+        UserID, DeckName string
+        Count            int
+    }{
+        {"TestUser1", "TestDeck1", 3},
+        {"TestUser1", "TestDeck2", 2},
+        {"TestUser2", "TestDeck1", 2},
+        {"TestUser2", "TestDeck3", 3},
+    }
+
+    for _, card := range testCards {
+        for i := 1; i <= card.Count; i++ {
+            _, err := NewCard(card.UserID, fmt.Sprintf("%s-%s-%d.jpg", card.UserID, card.DeckName, i), "Test Card", card.DeckName)
+            if err != nil {
+                t.Fatalf("Failed to create test card: %v", err)
+            }
+        }
+    }
+    defer func() {
+        for _, card := range testCards {
+            for i := 1; i <= card.Count; i++ {
+                CardEngine.Exec("DELETE FROM cards WHERE file_name = ?", fmt.Sprintf("%s-%s-%d.jpg", card.UserID, card.DeckName, i))
+            }
+        }
+    }()
+
+    // Retrieve file names for each deck of each user
+    for _, card := range testCards {
+        fileNames, err := GetFileNamesForDeck(card.UserID, card.DeckName)
+        if err != nil {
+            t.Fatalf("Failed to retrieve file names for %s's %s deck: %v", card.UserID, card.DeckName, err)
+        }
+
+        expectedFileNames := make([]string, card.Count)
+        for i := 1; i <= card.Count; i++ {
+            expectedFileNames[i-1] = fmt.Sprintf("%s-%s-%d.jpg", card.UserID, card.DeckName, i)
+        }
+
+        if !reflect.DeepEqual(fileNames, expectedFileNames) {
+            t.Errorf("Retrieved file names for %s's %s deck do not match expected file names", card.UserID, card.DeckName)
+        }
+    }
+}
+
+
 
 func teardownTestCardDatabase() error {
 	// Clean up the test card database after the tests are run

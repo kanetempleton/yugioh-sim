@@ -437,6 +437,26 @@ func startServer() {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 	})
+
+	r.HandleFunc("/cards-in-deck", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			// Parse query parameters
+			userID := r.URL.Query().Get("user_id")
+			deckName := r.URL.Query().Get("deck")
+	
+			// Get the list of card file names using the GetFileNamesForDeck method
+			cardFileNames, err := GetFileNamesForDeck(userID, deckName)
+			if err != nil {
+				http.Error(w, "Error retrieving card file names", http.StatusInternalServerError)
+				return
+			}
+	
+			// Convert the card file names to JSON and send the response
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(cardFileNames)
+		}
+	})
+	
 	
 	
 	

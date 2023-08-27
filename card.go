@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+    "time"
+    "math/rand"
 )
 
 // Card represents a user's uploaded card.
@@ -174,3 +176,41 @@ func GetCardsByDeck(userID, deckName string) ([]*Card, error) {
 }
 
 
+
+
+// GetFileNamesForDeck retrieves the file names of all cards in a user's specified deck.
+func GetFileNamesForDeck(userID, deckName string) ([]string, error) {
+    var fileNames []string
+    err := CardEngine.Table("cards").Cols("file_name").
+        Where("user_i_d = ? AND deck = ?", userID, deckName).
+        Find(&fileNames)
+    if err != nil {
+        return nil, err
+    }
+    return fileNames, nil
+}
+
+
+// ShuffleDeck shuffles the deck of cards for the specified user.
+func ShuffleDeck(userID, deck string) ([]int, error) {
+    // Retrieve the cards in the specified deck for the user
+    cards, err := GetCardsByDeck(userID, deck)
+    if err != nil {
+        return nil, err
+    }
+
+    // Create a list of card indices [0, 1, ..., N-1]
+    cardIndices := make([]int, len(cards))
+    for i := range cardIndices {
+        cardIndices[i] = i
+    }
+
+    // Shuffle the card indices using the Fisher-Yates algorithm
+    rand.Seed(time.Now().UnixNano())
+    for i := len(cardIndices) - 1; i > 0; i-- {
+        j := rand.Intn(i + 1)
+        cardIndices[i], cardIndices[j] = cardIndices[j], cardIndices[i]
+    }
+
+    return cardIndices, nil
+}

@@ -9,6 +9,7 @@
     justify-content: center;
     box-sizing: border-box;
     position: relative; /* Add position property */
+    padding: 10px;
 }
 
 /* Scale the card images to fit the grid slots */
@@ -58,6 +59,7 @@
     justify-content: center;
     box-sizing: border-box;
     position: relative; /* Add position property */
+    padding: 10px;
 }
 
 /* Duel controls */
