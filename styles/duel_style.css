@@ -19,6 +19,70 @@
     display: block;
 }
 
+/* Overlay styling */
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* Add overlay styles for full-page overlay */
+.overlay-full-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure the overlay appears above other content */
+}
+.selected-card {
+    outline: 3px solid #FFD700; /* Bright yellow outline */
+}
+
+
+
+.overlay-content {
+    max-width: 90%;
+    max-height: 90%;
+    pointer-events: none;
+}
+
+
+.overlay-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.overlay-button {
+    padding: 8px 16px;
+    background-color: #941c04;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.empty-slot-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 0, 0.95); /* Transparent yellow */
+    z-index: 10;
+}
+
 /* Add spacing between the 2x7 grid and the 1x7 grid */
 #hand-deck-section {
     margin-top: 20px;

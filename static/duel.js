@@ -78,7 +78,36 @@ function resetSlots() {
     resetDeckSlot();
 }
 
+function createOverlayComponent() {
+    const overlay = document.createElement('div');
+    overlay.classList.add('card-overlay');
+    const overlayContent = document.createElement('div');
+    overlayContent.classList.add('overlay-buttons');
+    overlayContent.innerHTML = `
+        <button class="overlay-button overlay-button-view">View</button>
+        <button class="overlay-button overlay-button-play">Play</button>
+    `;
+    overlay.appendChild(overlayContent);
+    return overlay;
+}
 
+function addOverlay(cardImage, cardFileName) {
+    const overlay = document.createElement('div');
+    overlay.classList.add('card-overlay');
+    const overlayContent = document.createElement('div');
+    overlayContent.classList.add('overlay-buttons');
+    overlayContent.innerHTML = `
+        <button class="overlay-button view-button">View</button>
+        <button class="overlay-button play-button">Play</button>
+    `;
+    overlay.appendChild(overlayContent);
+
+    cardImage.parentElement.appendChild(overlay);
+
+    cardImage.addEventListener('mouseleave', () => {
+        overlay.remove();
+    });
+}
 
 function initLifePoints(deckFileNames) {
     const dropdownContainer = document.getElementById('selectDeck').parentNode;
@@ -141,11 +170,7 @@ function resetDuel(deckFileNames) {
         }
 }
 
-var currentIndex = 0;
-let deckIsEmpty = false; // Track whether the deck is empty
-function isHandFull() {
-    return currentIndex >= 6; // 6 cards in hand
-}
+
 
 function clickDeck(deckFileNames) {
     if (!deckIsEmpty && !isHandFull()) {
@@ -171,6 +196,15 @@ function clickDeck(deckFileNames) {
     }
 }
 
+var currentIndex = 0;
+let deckIsEmpty = false; // Track whether the deck is empty
+let selectedCardSlot = null;
+let selectedCardImage = null;
+
+function isHandFull() {
+    return currentIndex >= 6; // 6 cards in hand
+}
+
 // Function to start the duel
 function startDuel(deckFileNames) {
     // Replace the dropdown with the life points display and controls
@@ -179,12 +213,110 @@ function startDuel(deckFileNames) {
 
     currentIndex = 0;
 
-
     // Event listener for clicking the deck
     deckSlot.addEventListener('click', () => {
         clickDeck(deckFileNames);
     });
+
+    const cardSlots = document.querySelectorAll('.grid-slot, .hand-slot');
+    cardSlots.forEach(cardSlot => {
+        cardSlot.addEventListener('mouseenter', () => {
+            const cardImage = cardSlot.querySelector('.card-image');
+            const overlay = createOverlayComponent();
+            
+            if (cardImage && cardSlot !== deckSlot) {
+                cardSlot.appendChild(overlay);
+                overlay.addEventListener('mouseleave', () => {
+                    overlay.remove();
+                });
+            }
+
+            const playButton = overlay.querySelector('.overlay-button-play');
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    if (selectedCardSlot === null) {
+                        selectedCardSlot = cardSlot;
+                        selectedCardImage = cardImage.cloneNode();
+                        cardImage.classList.add('selected-card');
+                    } else if (selectedCardSlot === cardSlot) {
+                        selectedCardSlot = null;
+                        selectedCardImage = null;
+                        cardImage.classList.remove('selected-card');
+                    } else if (!cardSlot.querySelector('.card-image')) {
+                        // Move the selected card to the new slot
+                        cardSlot.innerHTML = '';
+                        cardSlot.appendChild(selectedCardImage);
+                        selectedCardSlot.innerHTML = '';
+                        selectedCardSlot.classList.remove('selected-card');
+                        selectedCardSlot.appendChild(cardImage);
+                        selectedCardSlot = null;
+                        selectedCardImage = null;
+                    }
+                });
+            }
+
+   
+
+            if (!cardImage && cardSlot !== deckSlot && selectedCardSlot !== cardSlot) {
+                if (selectedCardSlot != null) {
+                    const emptySlotOverlay = document.createElement('div');
+                    emptySlotOverlay.classList.add('empty-slot-overlay');
+                    cardSlot.appendChild(emptySlotOverlay);
+                    cardSlot.addEventListener('click', () => {
+                        console.log("clicked cardslot")
+                        if (selectedCardSlot !== null && cardSlot.classList.contains('empty-slot-overlay')) {
+                            // Move the selected card to the new slot
+                            console.log("moving cardslot")
+                            cardSlot.innerHTML = '';
+                            cardSlot.appendChild(selectedCardImage);
+                            selectedCardSlot.innerHTML = '';
+                            selectedCardSlot.classList.remove('selected-card');
+                            selectedCardSlot.appendChild(cardImage);
+                            selectedCardSlot = null;
+                            selectedCardImage = null;
+                
+                            // Remove the empty slot overlay
+                            const emptySlotOverlay = cardSlot.querySelector('.empty-slot-overlay');
+                            if (emptySlotOverlay) {
+                                emptySlotOverlay.remove();
+                            }
+                        }
+                    });
+                }
+            }
+
+            cardSlot.addEventListener('mouseleave', () => {
+                const emptySlotOverlay = cardSlot.querySelector('.empty-slot-overlay');
+                if (emptySlotOverlay) {
+                    emptySlotOverlay.remove();
+                }
+            });
+
+            
+
+            const viewButton = overlay.querySelector('.overlay-button-view');
+
+            viewButton.addEventListener('click', () => {
+                const fullCardImage = cardImage.cloneNode();
+                fullCardImage.classList.add('overlay-content');
+
+                // Create the full-page overlay
+                const fullPageOverlay = document.createElement('div');
+                fullPageOverlay.classList.add('overlay-full-page');
+                fullPageOverlay.appendChild(fullCardImage);
+
+                // Append the full-page overlay to the body
+                document.body.appendChild(fullPageOverlay);
+
+                // Add event listener to close the full-page overlay
+                fullPageOverlay.addEventListener('click', () => {
+                    fullPageOverlay.remove();
+                });
+            });
+        });
+    });
 }
+
 
 // Event listener for the "Start!" button
 startButton.addEventListener('click', () => {
