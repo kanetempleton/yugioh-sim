@@ -13,6 +13,7 @@ if (!sessionCookie) {
 
 // Get references to HTML elements
 const selectDeckDropdown = document.getElementById('selectDeck');
+const selectExtraDeckDropdown = document.getElementById('selectExtraDeck')
 const startButton = document.getElementById('startButton');
 const deckSlot = document.getElementById('slot-14');
 
@@ -169,6 +170,23 @@ function populateDeckDropdown() {
                 option.value = deck;
                 option.textContent = deck;
                 selectDeckDropdown.appendChild(option);
+                selectExtraDeckDropdown.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching user decks:', error);
+        });
+}
+
+function populateExtraDeckDropdown() {
+    fetch('/get-user-decks')
+        .then(response => response.json())
+        .then(decks => {
+            decks.forEach(deck => {
+                const option = document.createElement('option');
+                option.value = deck;
+                option.textContent = deck;
+                selectDeckDropdown.appendChild(option);
             });
         })
         .catch(error => {
@@ -179,6 +197,7 @@ function populateDeckDropdown() {
 // Populate the deck dropdown on page load
 window.onload = function() {
     populateDeckDropdown();
+    populateExtraDeckDropdown();
 };
 
 function shuffleArray(array) {
@@ -424,11 +443,11 @@ function initLifePoints(deckFileNames) {
 
     // Event listener for the "Reset" button
     resetDuelButton.addEventListener('click', () => {
-        resetDuel(deckFileNames)
+        resetDuel(deckFileNames,extraDeckFileNames)
     });
 }
 
-function resetDuel(deckFileNames) {
+function resetDuel(deckFileNames,extraDeckFileNames) {
     const confirmReset = confirm("Are you sure you want to reset the duel and shuffle your cards?");
         if (confirmReset) {
             // Reset all slots and shuffle the deck
@@ -453,7 +472,6 @@ function getCardImageNameFromSlotID(slotID) {
     }
     return null; // Return null if no card image is found in the slot
 }
-
 function showGraveyardCards() {
     // Create the overlay container
     const overlayContainer = document.createElement('div');
@@ -471,13 +489,26 @@ function showGraveyardCards() {
     const gridContainer = document.createElement('div');
     gridContainer.classList.add('grid-container');
 
-    // Add card images to the grid
-    graveyardCardFiles.forEach(cardFileName => {
-        const cardImage = document.createElement('img');
-        cardImage.src = `/card-images/${cardFileName}`;
-        cardImage.classList.add('graveyard-card-image');
-        gridContainer.appendChild(cardImage);
-    });
+    // Function to rebuild the grid with updated card images
+    const rebuildGrid = () => {
+        gridContainer.innerHTML = ''; // Clear existing images
+        graveyardCardFiles.forEach(cardFileName => {
+            const cardImage = document.createElement('img');
+            cardImage.src = `/card-images/${cardFileName}`;
+            cardImage.classList.add('graveyard-card-image');
+            
+            // Add click event to call returnToHand method
+            cardImage.addEventListener('click', () => {
+                returnToHand(cardFileName); // Call your method here
+                rebuildGrid(); // Refresh the grid
+            });
+
+            gridContainer.appendChild(cardImage);
+        });
+    };
+
+    // Initial build of the grid
+    rebuildGrid();
 
     // Append elements to the overlay container
     overlayContainer.appendChild(closeButton);
@@ -486,6 +517,7 @@ function showGraveyardCards() {
     // Append the overlay container to the body
     document.body.appendChild(overlayContainer);
 }
+
 
 
 
@@ -549,6 +581,91 @@ function drawFromDeck() {
     makeVertical(handSlot)
     setSlotCard(handSlot,cardFileName);
     currentIndex++;
+}
+
+function returnToHand(cardFileName) {
+    console.log("returnToHand: " + cardFileName);
+    if (isHandFull()) {
+        // do nothing
+    } else {
+        const handSlot = firstOpenHandSlot();
+        handSlot.innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
+        makeVertical(handSlot);
+        setSlotCard(handSlot, cardFileName);
+
+        // Find the index of the cardFileName in graveyardCardFiles
+        const index = graveyardCardFiles.indexOf(cardFileName);
+        
+        // Remove the cardFileName from the array if found
+        if (index !== -1) {
+            graveyardCardFiles.splice(index, 1);
+        }
+    }
+}
+
+function addExtraDeckCardToHand(cardFileName) {
+    console.log("addExtraDeckCardToHand: " + cardFileName);
+    if (isHandFull()) {
+        // do nothing
+    } else {
+        const handSlot = firstOpenHandSlot();
+        handSlot.innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
+        makeVertical(handSlot);
+        setSlotCard(handSlot, cardFileName);
+
+        // Find the index of the cardFileName in graveyardCardFiles
+        const index = extraDeckCards.indexOf(cardFileName);
+        
+        // Remove the cardFileName from the array if found
+        if (index !== -1) {
+            extraDeckCards.splice(index, 1);
+        }
+    }
+}
+
+function clickExtraDeck() {
+    // Create the overlay container
+    const overlayContainer = document.createElement('div');
+    overlayContainer.classList.add('graveyard-overlay');
+
+    // Create the close button
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.classList.add('overlay-close-button');
+    closeButton.addEventListener('click', () => {
+        overlayContainer.remove();
+    });
+
+    // Create a grid to display the card images
+    const gridContainer = document.createElement('div');
+    gridContainer.classList.add('grid-container');
+
+    // Function to rebuild the grid with updated card images
+    const rebuildGrid = () => {
+        gridContainer.innerHTML = ''; // Clear existing images
+        extraDeckCards.forEach(cardFileName => {
+            const cardImage = document.createElement('img');
+            cardImage.src = `/card-images/${cardFileName}`;
+            cardImage.classList.add('graveyard-card-image');
+
+            cardImage.addEventListener('click', () => {
+                addExtraDeckCardToHand(cardFileName); // Call your method here
+                rebuildGrid(); // Refresh the grid
+            });
+
+            gridContainer.appendChild(cardImage);
+        });
+    };
+
+    // Initial build of the grid
+    rebuildGrid();
+
+    // Append elements to the overlay container
+    overlayContainer.appendChild(closeButton);
+    overlayContainer.appendChild(gridContainer);
+
+    // Append the overlay container to the body
+    document.body.appendChild(overlayContainer);
 }
 
 function clickDeck() {
@@ -617,11 +734,12 @@ function clickPlayButton(cardSlot) {
 var cardFileNames = null;
 
 // Function to start the duel
-function startDuel(deckFileNames) {
+function startDuel(deckFileNames,extraDeckFileNames) {
     // Replace the dropdown with the life points display and controls
     cardFileNames = deckFileNames;
     shuffleArray(cardFileNames);
-    initLifePoints(cardFileNames);
+    initLifePoints(cardFileNames,extraDeckFileNames);
+    extraDeckCards = extraDeckFileNames;
 
     currentIndex = 0;
 
@@ -667,6 +785,9 @@ function clickSlot(slot) {
     }
     if (getSlotID(slot)==slotIDs.GRAVEYARD_SLOT) {
         clickGraveyard();
+    }
+    if (getSlotID(slot)==slotIDs.EXTRA_DECK_SLOT) {
+        clickExtraDeck();
     }
     if (selectedCardSlot != null) {
         if (!cardOverlayVisible) {
@@ -842,7 +963,7 @@ function mouseEnterSlot(cardSlot) {
     const cardImage = cardSlot.querySelector('.card-image');
             const overlay = createOverlayComponent();
             
-            if (cardImage && cardSlot !== deckSlot) {
+            if (cardImage && cardSlot !== deckSlot && cardSlot !== extraDeckSlot) {
                 createActionOverlay(cardSlot)
             }
 
@@ -907,18 +1028,27 @@ function clearSlotCard(slot) {
     cardInSlot[getSlotID(slot)] = null;
 }
 
-
+var extraDeckCards = null;
 // Event listener for the "Start!" button
 startButton.addEventListener('click', () => {
     // Fetch the selected deck's card file names using the /cards-in-deck route
     const selectedDeck = selectDeckDropdown.value;
+    const extraDeck = selectExtraDeckDropdown.value;
+
     fetch(`/cards-in-deck?user_id=${sessionCookie}&deck=${selectedDeck}`)
         .then(response => response.json())
         .then(deckFileNames => {
             // Display the card-back image in the hand slot 7
             deckSlot.innerHTML = `<img class="card-image" src="/card-images/card-back.jpg">`;
-            // Start the duel simulation
-            startDuel(deckFileNames);
+            getSlot(slotIDs.EXTRA_DECK_SLOT).innerHTML = `<img class="card-image" src="/card-images/card-back.jpg">`;
+
+            // Fetch the extra deck's card file names using the /cards-in-deck route
+            return fetch(`/cards-in-deck?user_id=${sessionCookie}&deck=${extraDeck}`)
+                .then(response => response.json())
+                .then(extraDeckFileNames => {
+                    // Start the duel simulation with both deck and extra deck file names
+                    startDuel(deckFileNames, extraDeckFileNames);
+                });
         })
         .catch(error => {
             console.error('Error fetching card file names:', error);
