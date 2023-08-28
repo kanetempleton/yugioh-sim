@@ -190,6 +190,7 @@ function shuffleArray(array) {
 
 function resetSlotID(i) {
     console.log("reset slot ID: "+i)
+    makeVertical(getSlot(i))
     switch (i) {
         case slotIDs.DECK_SLOT:
             resetDeckSlot();
@@ -502,30 +503,38 @@ function addCardToGraveyard(cardFileName) {
 }
 
 
-function addCardToSlotID(slotID, cardFileName) {
-    console.log("addCardToSlotID: "+slotID+","+cardFileName)
-    getSlot(slotID).innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
-}
 
-function addCardToSlot(slot, cardFileName) {
+function addCardToSlot(slot, cardFileName, vertical) {
     
     console.log("addCardToSlot: "+getSlotID(slot)+","+cardFileName)
+    
 
     if (slotID(slot) == slotIDs.GRAVEYARD_SLOT) {
         addCardToGraveyard(cardFileName);
         return;
     }
     slot.innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
+    if (vertical)
+        slot.classList.add('vertical-card');
+    else
+        slot.classList.add('horizontal-card')
 }
 
 function moveCardFromSlot(slot_from, slot_to, facedown) {
     console.log("moveCardFromSlot: "+getSlotID(slot_from)+","+getSlotID(slot_to)+","+facedown)
     if (facedown) {
         setFacedownCard(slot_to);
+        if (isHorizontal(slot_from)) {
+            makeHorizontal(slot_to);
+        }
         resetSlotID(getSlotID(slot_from));
     } else {
+        
         card = getCardImageNameFromSlotID(getSlotID(slot_from));
-        addCardToSlot(slot_to,card);
+        addCardToSlot(slot_to,card,isVertical(slot_from));
+        if (isHorizontal(slot_from)) {
+            makeHorizontal(slot_to);
+        }
         resetSlotID(getSlotID(slot_from));
     }
     setSlotCard(slot_to,cardInSlot[slotID(slot_from)])
@@ -537,6 +546,7 @@ function drawFromDeck() {
     const cardFileName = cardFileNames[currentIndex];
     const handSlot = firstOpenHandSlot();
     handSlot.innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
+    makeVertical(handSlot)
     setSlotCard(handSlot,cardFileName);
     currentIndex++;
 }
@@ -667,7 +677,9 @@ function clickSlot(slot) {
                 if (getSlotID(slot)!=slotIDs.EXTRA_DECK_SLOT && getSlotID(slot)!=slotIDs.DECK_SLOT 
                 && getSlotID(slot)!=slotIDs.HAND_SLOT_7) {
                     // TODO: add card to extra deck
+                
                     moveCardFromSlot(selectedCardSlot,slot,false);
+                    
                 } 
             }
         }
@@ -742,8 +754,45 @@ function createActionOverlay(cardSlot) {
 
     changePositionButton.addEventListener('click', () => {
         // Call changePosition(slot) function here
+        changePosition(cardSlot)
     });
 }
+function isVertical(slot) {
+    return slot.classList.contains('vertical-card')
+}
+function isHorizontal(slot) {
+    return slot.classList.contains('horizontal-card')
+}
+function makeVertical(slot) {
+    slot.classList.remove('horizontal-card')
+    slot.classList.add('vertical-card')
+}
+function makeHorizontal(slot) {
+    slot.classList.remove('vertical-card')
+    slot.classList.add('horizontal-card')
+}
+function changePosition(slot) {
+    const cardImage = slot.querySelector('.card-image');
+    if (!cardImage) {
+        console.log(`No card image found in slot ${slot}.`);
+        return;
+    }
+
+    const isVertical = slot.classList.contains('vertical-card');
+    
+    if (isVertical) {
+        // Switch to horizontal position
+        slot.classList.remove('vertical-card');
+        slot.classList.add('horizontal-card');
+        cardImage.style.transform = 'rotate(90deg)';
+    } else {
+        // Switch to vertical position
+        slot.classList.remove('horizontal-card');
+        slot.classList.add('vertical-card');
+        cardImage.style.transform = 'none';
+    }
+}
+
 
 function isFaceDown(slot) {
     const cardImageElement = slot.querySelector('.card-image');
@@ -767,7 +816,7 @@ function flipCard(slot) {
             if (isFaceDown(slot)) {
                 console.log("Flipping face-down card at " + slotID + " to face-up");
                 const cardFileName = cardInSlot[slotID];
-                cardImageElement.setAttribute('src', cardFileName);
+                cardImageElement.setAttribute('src', '/card-images/'+cardFileName);
             } else {
                 console.log("Flipping face-up card at " + slotID + " to face-down");
                 cardImageElement.setAttribute('src', '/card-images/card-back.jpg');
