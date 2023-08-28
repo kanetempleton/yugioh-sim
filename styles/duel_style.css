@@ -73,13 +73,33 @@
     cursor: pointer;
 }
 
+.graveyard-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.overlay-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+
 .empty-slot-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 0, 0.95); /* Transparent yellow */
+    background-color: rgba(255, 191, 0, 0.243); /* Transparent yellow */
     z-index: 10;
 }
 
@@ -95,6 +115,18 @@
     flex-direction: column;
     align-items: center;
     margin-top: 20px;
+}
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    max-width: 80%;
+    overflow-y: auto;
+}
+
+.graveyard-card-image {
+    width: 100%;
+    height: auto;
 }
 
 .grid-row {
@@ -147,6 +179,17 @@
     cursor: pointer;
     border-radius: 5px;
 }
+.overlay-button-small {
+    display: block;
+    width: 100%;
+    margin-top: 5px; /* Adjust as needed */
+}
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5px;
+}
 
 /* Slot text styling */
 .slot-text {
@@ -166,12 +209,11 @@
 }
 
 /* Apply a teal glow to specific slots on hover */
-#extra-deck-slot:hover,
 #slot-10:hover,
 #slot-9:hover,
-#slot-8:hover,
-#slot-7:hover,
-#slot-6:hover {
+#slot-13:hover,
+#slot-11:hover,
+#slot-12:hover {
     box-shadow: 0 0 10px teal;
 }
 
@@ -192,31 +234,32 @@
 
 
 
-#deck-slot:hover,
-#hand-slot-1:hover,
-#hand-slot-2:hover,
-#hand-slot-3:hover,
-#hand-slot-4:hover,
-#hand-slot-6:hover,
-#hand-slot-5:hover {
+#slot-14:hover,
+#slot-15:hover,
+#slot-16:hover,
+#slot-17:hover,
+#slot-18:hover,
+#slot-19:hover,
+#slot-8:hover,
+#slot-20:hover {
     box-shadow: 0 0 10px gold;
 }
 
 /* Apply a red glow to specific slots on hover */
-#slot-1:hover,
 #slot-2:hover,
 #slot-3:hover,
 #slot-4:hover,
-#slot-5:hover {
+#slot-5:hover,
+#slot-6:hover {
     box-shadow: 0 0 10px red;
 }
 
 /* Apply a gray glow to the graveyard slot on hover */
-#graveyard-slot:hover {
+#slot-7:hover {
     box-shadow: 0 0 10px gray;
 }
 
 /* Apply a green glow to the field slot on hover */
-#field-slot:hover {
+#slot-1:hover {
     box-shadow: 0 0 10px green;
 }
