@@ -521,8 +521,6 @@ function showGraveyardCards() {
 
 
 
-
-
 let graveyardCardFiles = null;
 function addCardToGraveyard(cardFileName) {
     console.log("addCardToGraveyard: " + cardFileName);
@@ -775,6 +773,90 @@ function clickGraveyard() {
         showGraveyardCards();
     }
 }
+function showDeckCards() {
+    // Create the overlay container
+    const overlayContainer = document.createElement('div');
+    overlayContainer.classList.add('deck-overlay');
+
+    // Create the close button
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.classList.add('overlay-close-button');
+    closeButton.addEventListener('click', () => {
+        overlayContainer.remove();
+    });
+
+    // Create a grid to display the card images
+    const gridContainer = document.createElement('div');
+    gridContainer.classList.add('grid-container');
+
+    // Get the remaining cards in the deck (replace with your actual deck info)
+    const remainingCardFiles = cardFileNames.slice(currentIndex);
+
+    // Shuffle the array to randomize the order
+    const shuffledCardFiles = shuffleArray2(remainingCardFiles);
+
+    // Function to rebuild the grid with updated card images
+    const rebuildGrid = () => {
+        gridContainer.innerHTML = ''; // Clear existing images
+        shuffledCardFiles.forEach(cardFileName => {
+            const cardImage = document.createElement('img');
+            cardImage.src = `/card-images/${cardFileName}`;
+            cardImage.classList.add('deck-card-image');
+            
+            // Add click event to call addToHand method
+            cardImage.addEventListener('click', () => {
+                addToHand(cardFileName); // Call your method here
+                overlayContainer.remove();
+            });
+
+            gridContainer.appendChild(cardImage);
+        });
+    };
+
+    // Initial build of the grid
+    rebuildGrid();
+
+    // Append elements to the overlay container
+    overlayContainer.appendChild(closeButton);
+    overlayContainer.appendChild(gridContainer);
+
+    // Append the overlay container to the body
+    document.body.appendChild(overlayContainer);
+}
+function addToHand(cardFileName) {
+    console.log("addCardFromDeck: " + cardFileName);
+    if (isHandFull()) {
+        // do nothing
+    } else {
+        const handSlot = firstOpenHandSlot();
+        handSlot.innerHTML = `<img class="card-image" src="/card-images/${cardFileName}">`;
+        makeVertical(handSlot);
+        setSlotCard(handSlot, cardFileName);
+
+        // Find the index of the cardFileName in cardFileNames
+        const index = cardFileNames.indexOf(cardFileName);
+        
+        // Remove the cardFileName from the array if found
+        if (index !== -1) {
+            cardFileNames.splice(index, 1);
+        }
+    }
+}
+
+
+// Function to shuffle an array
+function shuffleArray2(array) {
+    const shuffledArray = array.slice(); // Create a copy of the array
+    for (let i = shuffledArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]]; // Swap elements
+    }
+    return shuffledArray;
+}
+
+
+
 
 // handles clicking logic for card slots
 function clickSlot(slot) {
@@ -788,6 +870,9 @@ function clickSlot(slot) {
     }
     if (getSlotID(slot)==slotIDs.EXTRA_DECK_SLOT) {
         clickExtraDeck();
+    }
+    if (getSlotID(slot)==slotIDs.HAND_SLOT_7) {
+        showDeckCards();
     }
     if (selectedCardSlot != null) {
         if (!cardOverlayVisible) {
