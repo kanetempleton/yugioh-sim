@@ -11,12 +11,13 @@ import (
     _ "github.com/go-sql-driver/mysql"
 	"mime/multipart"
 	"os"
-	"github.com/go-xorm/xorm"
+//	"github.com/go-xorm/xorm"
 	"io"
 	"math/rand"
     "time"
 	"encoding/json"
 	"path/filepath"
+	"io/ioutil"
 )
 
 var db *sql.DB
@@ -335,76 +336,93 @@ func startServer() {
 	
 
 	r.HandleFunc("/add-card", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("/add-card");
 		if r.Method == http.MethodPost {
-			err := r.ParseMultipartForm(10 << 20) // Limit file size to 10MB
+			fmt.Println("POST /add-card");
+			err := r.ParseMultipartForm(200 << 20) // Limit file size to 10MB
+		
+
+fmt.Println("Multipart Form Fields:")
+for key, values := range r.MultipartForm.Value {
+    fmt.Printf("Field: %s, Values: %v\n", key, values)
+}
+
+fmt.Println("Multipart Form Files:")
+for key, files := range r.MultipartForm.File {
+    for _, file := range files {
+        fmt.Printf("Field: %s, Filename: %s, Size: %d bytes\n", key, file.Filename, file.Size)
+    }
+}
 			if err != nil {
 				http.Error(w, "Error parsing form", http.StatusInternalServerError)
 				return
 			}
+			fmt.Println("no errors parsing form");
 	
 			sessionCookie, err := r.Cookie("session")
+			fmt.Println("checked sesion cook");
 			if err != nil || sessionCookie.Value == "" {
 				http.Redirect(w, r, "/login", http.StatusSeeOther) // Redirect to login page if not authenticated
 				return
 			}
 	
 			userID := sessionCookie.Value
-			userID = strings.ToLower(userID)
-			name := r.FormValue("name")
-			deck := r.FormValue("deck") 
-			if deck == "" {
-				deck = "None"
-			}
-			file, fileHeader, err := r.FormFile("image")
-			if err != nil {
-				http.Error(w, "Error retrieving image file", http.StatusInternalServerError)
-				return
-			}
-			defer file.Close()
-	
-			
-			baseFilename := fmt.Sprintf("%s_%s", userID, strings.ReplaceAll(fileHeader.Filename, " ", "_"))
-        	fileName := baseFilename
-			//fileName = generateRandomString(10)
+		userID = strings.ToLower(userID)
+		deck := r.FormValue("deck")
+		if deck == "" {
+			deck = "None"
+		}
 
-			// Check if the filename already exists
+		// Handle multiple uploaded files
+		fmt.Println("preparing to handle images");
+		imageFiles := r.MultipartForm.File["images[]"]
+        for _, fileHeader := range imageFiles {
+			fmt.Println("enter loop");
+            file, err := fileHeader.Open()
+            if err != nil {
+                http.Error(w, "Error retrieving image file", http.StatusInternalServerError)
+                return
+            }
+            defer file.Close()
+
+			baseFilename := fmt.Sprintf("%s_%s", userID, strings.ReplaceAll(fileHeader.Filename, " ", "_"))
+			fileName := baseFilename
+			fmt.Println("processing imageFile: "+fileName)
 			i := 1
-			for fileExists(fileName) {
+			for fileExists("card-images/" + fileName) {
 				fileName = fmt.Sprintf("%s-%d%s", baseFilename, i, filepath.Ext(fileHeader.Filename))
 				i++
 			}
 
-	
 			// Save the uploaded image to a directory (e.g., "card-images")
-			imagePath := "card-images/" + fileName
-			err = saveImageToFile(file, imagePath)
-			if err != nil {
-				http.Error(w, "Error saving image", http.StatusInternalServerError)
-				return
-			}
-	
-			// Get or create a database session using XORM
-			session, err := xorm.NewEngine("mysql", "admin:obviouspassword@tcp(localhost:3306)/yugiohgo")
-			if err != nil {
-				http.Error(w, "Error creating database session", http.StatusInternalServerError)
-				return
-			}
-			defer session.Close()
-	
-			// Create a new Card entry in the database
-			NewCard(userID, fileName, name, deck)
-			if err != nil {
-				http.Error(w, "Error creating card entry", http.StatusInternalServerError)
-				return
-			}
-	
-			// Redirect to a success page or user account page
-			http.Redirect(w, r, "/account?message=Card+added+successfully%21", http.StatusSeeOther)
-		} else {
-			// Render the "add-card.html" template
-			http.ServeFile(w, r, "templates/add-card.html")
-		}
-	})
+            imagePath := "card-images/" + fileName
+			fmt.Println("trying to save image "+imagePath);
+            err = saveImageToFile(file, imagePath)
+			
+            if err != nil {
+                http.Error(w, "Error saving image", http.StatusInternalServerError)
+                return
+            }
+			fmt.Println("Tried saving image: "+imagePath);
+			printFilesInDirectory(".")
+
+            // Create a new Card entry in the database
+			fmt.Println("creating new card...");
+            NewCard(userID, fileName, fileName, deck)
+            if err != nil {
+                http.Error(w, "Error creating card entry", http.StatusInternalServerError)
+                return
+            }
+        }
+
+        // Redirect to a success page or user account page
+        http.Redirect(w, r, "/account?message=Card+added+successfully%21", http.StatusSeeOther)
+    } else {
+        // Render the "add-card.html" template
+        http.ServeFile(w, r, "templates/add-card.html")
+		
+    }
+})
 
 	r.HandleFunc("/cards/delete", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -466,7 +484,17 @@ func startServer() {
 	fmt.Println("Running server on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
+func printFilesInDirectory(dirPath string) {
+	files, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	fmt.Println("Files in directory:", dirPath)
+	for _, file := range files {
+		fmt.Println(file.Name())
+	}
+}
 
 
 // Example route handler for "/" or "/login" or others
