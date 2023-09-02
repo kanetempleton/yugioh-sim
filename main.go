@@ -4,5 +4,6 @@ import (
 )
 
 func main() {
-	startServer()
+	go startServer()
+	select {}
 }

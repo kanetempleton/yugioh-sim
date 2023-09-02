@@ -1,6 +1,6 @@
 module yugiohgo
 
-go 1.20
+go 1.18
 
 require (
 	github.com/go-sql-driver/mysql v1.7.1
@@ -8,14 +8,12 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
-	github.com/stretchr/testify v1.4.0
+	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.0.0-20190311183353-d8887717615a // indirect
 	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a // indirect
 	golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2 // indirect

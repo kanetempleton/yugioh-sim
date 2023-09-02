@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"io/ioutil"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sql.DB
@@ -124,17 +125,25 @@ func startServer() {
         username := r.FormValue("username")
         password := r.FormValue("password")
 
+		
+
         // Validate username and password
         user, err := GetUserByUsername(username)
         if err != nil {
             http.Error(w, "Error querying database", http.StatusInternalServerError)
             return
         }
+		/*
         if user == nil || user.Password != password {
 			fmt.Println("Invalid username/password")
 			http.Redirect(w, r, "/login?message2=Invalid+username+or+password", http.StatusSeeOther)
             return
-        }
+        }*/
+		if user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
+			fmt.Println("Invalid username/password")
+			http.Redirect(w, r, "/login?message2=Invalid+username+or+password", http.StatusSeeOther)
+			return
+		}
 
         // Set session cookie (example, needs improvement)
 		http.SetCookie(w, createSessionCookie(username))
@@ -164,13 +173,18 @@ func startServer() {
 			// Extract form values
 			username := r.FormValue("username")
 			password := r.FormValue("password")
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        http.Error(w, "Error hashing password", http.StatusInternalServerError)
+        return
+    }
 			email := r.FormValue("email")
 			// Other form values
 	
 			// Create a new user object
 			newUser := &User{
 				Username: username,
-				Password: password,
+				Password: string(hashedPassword),
 				Email:    email,
 				// Set other fields
 			}
@@ -496,7 +510,6 @@ func printFilesInDirectory(dirPath string) {
 	}
 }
 
-
 // Example route handler for "/" or "/login" or others
 func handleHome(w http.ResponseWriter, r *http.Request) {
     // Your code to handle the route here
@@ -530,6 +543,6 @@ func createSessionCookie(username string) *http.Cookie {
     return &http.Cookie{
         Name:   "session",
         Value:  username,
-        MaxAge: 3600,
+        MaxAge: 86400,
     }
 }

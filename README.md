@@ -44,10 +44,13 @@ To run the YugiohGo web application, you need to set up a MySQL database. Follow
    Then create a user to manage the application, and create a database for the application to use.
 
    ```MySQL
+   CREATE DATABASE yugiohgo;
+   CREATE DATABASE yugiohgo_test;
    CREATE USER 'admin'@'localhost' IDENTIFIED BY 'obviouspassword';
-   GRANT ALL PRIVILEGES ON your_database.* TO 'admin'@'localhost';
+   GRANT ALL PRIVILEGES ON yugiohgo.* TO 'admin'@'localhost';
+   GRANT ALL PRIVILEGES ON yugiohgo_test.* TO 'admin'@'localhost';
     FLUSH PRIVILEGES;
-    CREATE DATABASE yugiohgo;
+    
     ```
 
     You do not need to create any tables. The application uses XORM to manage this automatically.
