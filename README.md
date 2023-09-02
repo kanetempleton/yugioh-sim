@@ -9,7 +9,6 @@ Stack: Go + MySQL + JS
 - User Registration/Login: Users can create an account by providing a unique username, password, and email. Passwords are encrypted via one-way hashing for storage.
 - Card Uploading: Upload image files of custom cards (cardmaker.net is one place you can make them) and organize your cards into different decks
 - Single-User Duel: Simulate a Yu-Gi-Oh Duel using your custom cards as your deck. Select a deck and extra deck and begin the duel with 8000 Life Points and a blank Yu-Gi-Oh field. Perform card operations such as drawing cards from the deck, playing cards onto the field, flipping and changing card positions, adding cards to graveyard, etc. (You can simulate a duel against another player by opening another window as a second duel interface)
-- User Session Management: User sessions are managed using session cookies.
 
 ## Getting Started
 
