@@ -430,7 +430,7 @@ for key, files := range r.MultipartForm.File {
         }
 
         // Redirect to a success page or user account page
-        http.Redirect(w, r, "/account?message=Card+added+successfully%21", http.StatusSeeOther)
+        http.Redirect(w, r, "/view-deck?deck="+deck+"&message=Card+added+successfully%21", http.StatusSeeOther)
     } else {
         // Render the "add-card.html" template
         http.ServeFile(w, r, "templates/add-card.html")
