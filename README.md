@@ -6,8 +6,9 @@ Stack: Go + MySQL + JS
 
 ## Features
 
-- User Registration/Login: Users can create an account by providing a unique username, password, and email. Passwords are not yet encrypted in any way, so do not use real passwords.
-- Account Page: Logged-in users can view their account information and perform actions like viewing their deck and adding cards.
+- User Registration/Login: Users can create an account by providing a unique username, password, and email. Passwords are encrypted via one-way hashing for storage.
+- Card Uploading: Upload image files of custom cards (cardmaker.net is one place you can make them) and organize your cards into different decks
+- Single-User Duel: Simulate a Yu-Gi-Oh Duel using your custom cards as your deck. Select a deck and extra deck and begin the duel with 8000 Life Points and a blank Yu-Gi-Oh field. Perform card operations such as drawing cards from the deck, playing cards onto the field, flipping and changing card positions, adding cards to graveyard, etc. (You can simulate a duel against another player by opening another window as a second duel interface)
 - User Session Management: User sessions are managed using session cookies.
 
 ## Getting Started
@@ -63,6 +64,7 @@ To run the YugiohGo web application, you need to set up a MySQL database. Follow
 - have more than 6 cards in your hand
 - add cards back into deck & extra deck
 - prevent graveyard slot from turning horizontal when adding DEF position cards
+- player vs player dueling
 ### Cards:
 - upload multiple of an individual card at once
 - public decks
