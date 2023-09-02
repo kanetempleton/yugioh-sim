@@ -772,6 +772,7 @@ function clickGraveyard() {
     if (!hasSelectedCard()) {
         showGraveyardCards();
     }
+    makeVertical(getSlot(slotIDs.GRAVEYARD_SLOT));
 }
 function showDeckCards() {
     // Create the overlay container

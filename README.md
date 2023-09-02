@@ -16,7 +16,7 @@ Stack: Go + MySQL + JS
 2. Set up MySQL: See the steps below to make sure your MySQL environment is set up properly.
 3. Clone the repository: `git clone https://github.com/kanetempleton/yugioh-sim.git`
 4. Navigate to the project directory: `cd yugioh-sim`
-5. Get dependencies: `go mod tidy` or `go get`
+5. Get dependencies: `go mod tidy` (If you get a version error, edit the go.mod file to change required go version to the one you have installed)
 6. Compile the Go application: `go build`
 7. Run tests: `go test`
 8. Run the server: `./yugiohgo`
@@ -35,7 +35,7 @@ To run the YugiohGo web application, you need to set up a MySQL database. Follow
 
 1. **Install MySQL**: If you don't have MySQL installed, download and install it from the official website or a package manager. On mac, I recommend the homebrew command `brew install mysql`
 
-2. **Create the Admin and Database**: Log in to the MySQL command-line interface using a user with administrative privileges:
+2. **Create the Admin and Database**: Log in to the MySQL command-line interface using a user with administrative privileges (NOTE: it is highly recommended you change these credentials):
 
    ```bash
    mysql -u root -p
@@ -59,11 +59,17 @@ To run the YugiohGo web application, you need to set up a MySQL database. Follow
 
 
 ## TODO
-- add styling
-- encrypt passwords
-- upload card images
-- deck management per user
-- probably handle some copyright stuff
+### Dueling:
+- have more than 6 cards in your hand
+- add cards back into deck & extra deck
+- prevent graveyard slot from turning horizontal when adding DEF position cards
+### Cards:
+- upload multiple of an individual card at once
+- public decks
+### Users:
+- changing passwords
+- email verification for registration
+
 
 ## Note
 
